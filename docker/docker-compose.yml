@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: retail-postgres
+    environment:
+      POSTGRES_USER: products
+      POSTGRES_PASSWORD: products
+      POSTGRES_DB: productsdb
+    ports:
+      - "5432:5432"
+
+  mongo:
+    image: mongo:7
+    container_name: retail-mongo
+    ports:
+      - "27017:27017"
+
+  kafka:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.1.3
+    container_name: retail-kafka
+    command: >
+      redpanda start --overprovisioned --smp 1 --memory 1G --mode dev
+    ports:
+      - "9092:9092"

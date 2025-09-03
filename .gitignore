@@ -1,0 +1,15 @@
+# Maven/Java
+target/
+*.iml
+*.class
+*.log
+# IntelliJ
+.idea/
+*.iws
+*.ipr
+out/
+# OS
+.DS_Store
+Thumbs.db
+# Docker
+**/.env

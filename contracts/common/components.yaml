@@ -1,0 +1,29 @@
+components:
+  schemas:
+    Problem:
+      type: object
+      description: Standard error response based on RFC 7807
+      properties:
+        type:
+          type: string
+          format: uri
+          description: A URI reference that identifies the problem type
+          example: "https://example.com/problems/sku-conflict"
+        title:
+          type: string
+          description: Short summary of the problem
+          example: "SKU conflict"
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code
+          example: 409
+        detail:
+          type: string
+          description: Explanation specific to this occurrence of the problem
+          example: "SKU already exists: ACME-123"
+        instance:
+          type: string
+          format: uri
+          description: A URI reference that identifies the specific occurrence of the problem
+          example: "/api/v1/products/123"
