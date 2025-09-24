@@ -1,15 +1,8 @@
 spring:
   datasource:
     url: jdbc:tc:postgresql:16:///productsdb
-    username: products
-    password: products
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+
   jpa:
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        default_schema: public
-
-logging:
-  level:
-    org.testcontainers: INFO

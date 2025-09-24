@@ -2,12 +2,17 @@ services:
   postgres:
     image: postgres:16
     container_name: retail-postgres
+    ports:
+      - "5433:5432"
     environment:
+      POSTGRES_DB: productsdb
       POSTGRES_USER: products
       POSTGRES_PASSWORD: products
-      POSTGRES_DB: productsdb
-    ports:
-      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U products -d productsdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   mongo:
     image: mongo:7

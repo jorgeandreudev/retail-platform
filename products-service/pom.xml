@@ -95,33 +95,46 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.jorgeandreu.products_service.ProductsServiceApplication</mainClass>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.openapitools</groupId>
 				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>7.7.0</version>
 				<executions>
 					<execution>
 						<id>generate-products-api</id>
 						<phase>generate-sources</phase>
 						<goals><goal>generate</goal></goals>
 						<configuration>
-							<inputSpec>${project.parent.basedir}\contracts\products\products-v1.yaml</inputSpec>
+							<inputSpec>${project.parent.basedir}/contracts/products/products-v1.yaml</inputSpec>
 							<generatorName>spring</generatorName>
 							<apiPackage>com.jorgeandreu.products.infrastructure.api</apiPackage>
 							<modelPackage>com.jorgeandreu.products.infrastructure.api.model</modelPackage>
-							<invokerPackage>com.jorgeandreu.products.infrastructure.api.common</invokerPackage>
 							<output>${project.build.directory}/generated-sources/openapi</output>
+
+							<generateApis>true</generateApis>
+							<generateModels>true</generateModels>
+							<generateSupportingFiles>false</generateSupportingFiles>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+
 							<configOptions>
-								<interfaceOnly>true</interfaceOnly>
 								<delegatePattern>true</delegatePattern>
 								<useSpringBoot3>true</useSpringBoot3>
 								<useJakartaEe>true</useJakartaEe>
 								<dateLibrary>java8</dateLibrary>
+								<useTags>true</useTags>
 								<generateConstructorWithAllArgs>true</generateConstructorWithAllArgs>
 							</configOptions>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
