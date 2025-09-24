@@ -1,19 +1,26 @@
+server:
+  port: 8081
+
 spring:
+  application:
+    name: products-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/productsdb
+    url: jdbc:postgresql://localhost:5433/productsdb
     username: products
     password: products
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
-  application:
-    name: products-service
-
-server:
-  port: 8081
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
 
 springdoc:
   api-docs.path: /api-docs
   swagger-ui.path: /swagger-ui
 management:
   endpoints.web.exposure.include: health,info,metrics
+
+logging:
+  level:
+    org.springframework.boot.context.config: DEBUG
