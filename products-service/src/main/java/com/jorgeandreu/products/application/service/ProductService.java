@@ -1,21 +1,26 @@
 package com.jorgeandreu.products.application.service;
 
 import com.jorgeandreu.products.application.exception.SkuAlreadyExistsException;
+import com.jorgeandreu.products.application.mapper.CreateProductMapper;
 import com.jorgeandreu.products.domain.model.Product;
 import com.jorgeandreu.products.domain.port.in.CreateProductCommand;
 import com.jorgeandreu.products.domain.port.in.CreateProductUseCase;
 import com.jorgeandreu.products.domain.port.out.ProductRepositoryPort;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService implements CreateProductUseCase {
+
+    @Value("${products.initial-version:0}")
+    private long initialVersion;
 
     private final ProductRepositoryPort repository;
 
-    public ProductService(ProductRepositoryPort repository) {
-        this.repository = repository;
-    }
+    private final CreateProductMapper createProductMapper;
 
     @Override
     @Transactional
@@ -28,16 +33,8 @@ public class ProductService implements CreateProductUseCase {
             throw new SkuAlreadyExistsException(cmd.sku());
         }
 
-        var now = java.time.Instant.now();
-        var product = new Product(
-                null,
-                cmd.sku(),
-                cmd.name(),
-                cmd.price(),
-                cmd.stock(),
-                cmd.category(),
-                now, now
-        );
+        Product product = createProductMapper.toDomain(cmd, initialVersion);
+
         return repository.save(product);
     }
 }

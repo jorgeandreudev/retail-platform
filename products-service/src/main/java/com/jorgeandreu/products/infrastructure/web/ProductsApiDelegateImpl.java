@@ -1,56 +1,57 @@
 package com.jorgeandreu.products.infrastructure.web;
 
-import com.jorgeandreu.products.domain.port.in.CreateProductCommand;
+import com.jorgeandreu.products.domain.model.PageResult;
+import com.jorgeandreu.products.domain.model.Product;
 import com.jorgeandreu.products.domain.port.in.CreateProductUseCase;
+import com.jorgeandreu.products.domain.port.in.GetProductUseCase;
+import com.jorgeandreu.products.domain.port.in.ListProductsUseCase;
 import com.jorgeandreu.products.infrastructure.api.ProductsApiDelegate;
 import com.jorgeandreu.products.infrastructure.api.model.CreateProductRequest;
-import com.jorgeandreu.products.infrastructure.api.model.Product;
+import com.jorgeandreu.products.infrastructure.api.model.ProductPage;
+import com.jorgeandreu.products.infrastructure.api.model.ProductSearchCriteriaRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.net.URI;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
 public class ProductsApiDelegateImpl implements ProductsApiDelegate {
 
-    private final CreateProductUseCase create;
 
-    public ProductsApiDelegateImpl(CreateProductUseCase create) {
-        this.create = create;
-    }
+    private final GetProductUseCase getProduct;
 
-    private static OffsetDateTime toOdt(Instant i) {
-        return (i == null) ? null : OffsetDateTime.ofInstant(i, ZoneOffset.UTC);
+
+    private final ProductWebMapper webMapper;
+
+    private final CreateProductUseCase createProductUC;
+
+    private final ListProductsUseCase listProductUC;
+
+    @Override
+    public ResponseEntity<com.jorgeandreu.products.infrastructure.api.model.Product> createProduct(CreateProductRequest req) {
+        var cmd = webMapper.toCommand(req);
+
+        Product created = createProductUC.create(cmd);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}").buildAndExpand(created.id()).toUri();
+        return ResponseEntity.created(location).body(webMapper.toApi(created));
     }
 
     @Override
-    public ResponseEntity<Product> createProduct(CreateProductRequest req) {
-        var cmd = new CreateProductCommand(
-                req.getSku(),
-                req.getName(),
-                BigDecimal.valueOf(req.getPrice()),
-                req.getStock(),
-                req.getCategory()
-        );
+    public ResponseEntity<com.jorgeandreu.products.infrastructure.api.model.Product> getProductById(UUID id) {
+        Product product = getProduct.getById(id);
+        return ResponseEntity.ok(webMapper.toApi(product));
+    }
 
-        var created = create.create(cmd);
-
-        var body = new Product()
-                .id(UUID.fromString(created.id().toString()))
-                .sku(created.sku())
-                .name(created.name())
-                .price(created.price().doubleValue())
-                .stock(created.stock())
-                .category(created.category())
-                .createdAt(toOdt(created.createdAt()))
-                .updatedAt(toOdt(created.updatedAt()));
-
-        var location = URI.create("/api/v1/products/" + body.getId());
-        return ResponseEntity.created(location).body(body);
+    @Override
+    public ResponseEntity<ProductPage> searchProducts(ProductSearchCriteriaRequest productCriteria) {
+        var criteria = webMapper.productSearchCriteriaToSearchCriteria(productCriteria);
+        PageResult<Product> page = listProductUC.list(criteria);
+        return ResponseEntity.ok().body(webMapper.toApi(page));
     }
 }

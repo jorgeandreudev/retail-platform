@@ -1,12 +1,12 @@
-package com.jorgeandreu.products.infrastructure.api;
+package com.jorgeandreu.products.infrastructure.web.util;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.context.request.NativeWebRequest;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public final class ApiUtil {
-    private ApiUtil() {}
+public final class WebResponseUtil {
+    private WebResponseUtil() {}
 
     public static void setExampleResponse(NativeWebRequest req, String contentType, String example) {
         try {

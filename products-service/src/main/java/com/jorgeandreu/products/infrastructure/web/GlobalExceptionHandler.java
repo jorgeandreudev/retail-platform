@@ -1,4 +1,5 @@
 package com.jorgeandreu.products.infrastructure.web;
+import com.jorgeandreu.products.application.exception.ProductNotFoundException;
 import com.jorgeandreu.products.application.exception.SkuAlreadyExistsException;
 import com.jorgeandreu.products.infrastructure.api.model.Problem;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,7 +29,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(CONFLICT).body(p);
     }
 
-    // Por si se cae por la constraint única de DB
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<Problem> handleProductNotFound(ProductNotFoundException ex, WebRequest req) {
+        var p = new Problem()
+                .title("Product not found")
+                .status(NOT_FOUND.value())
+                .detail("Product not found: " + ex.getMessage())
+                .type(URI.create(URI.create("https://example.com/problems/not-found").toString()))
+                .instance(path(req));
+        return ResponseEntity.status(NOT_FOUND).body(p);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Problem> handleDataIntegrity(DataIntegrityViolationException ex, WebRequest req) {
         var p = new Problem()
