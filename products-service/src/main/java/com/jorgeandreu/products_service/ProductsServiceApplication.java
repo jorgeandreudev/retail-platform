@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@SpringBootApplication(scanBasePackages = "com.jorgeandreu.products")
+@SpringBootApplication(scanBasePackages = "com.jorgeandreu")
 @EnableJpaRepositories(basePackages = "com.jorgeandreu.products.infrastructure.db")
 @EntityScan(basePackages = "com.jorgeandreu.products.infrastructure.db")
 public class ProductsServiceApplication {

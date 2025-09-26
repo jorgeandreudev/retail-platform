@@ -1,5 +1,96 @@
 components:
   schemas:
+    components:
+      schemas:
+        ApiError:
+          type: object
+          required: [ code, message, traceId ]
+          properties:
+            code:
+              type: string
+              example: "PRODUCT_NOT_FOUND"
+            message:
+              type: string
+              example: "Product with id 123e4567-e89b-12d3-a456-426614174000 not found"
+            details:
+              type: object
+              additionalProperties: true
+              nullable: true
+              description: Extra context about the error
+              example:
+                field: "price"
+                reason: "must be greater than or equal to 0"
+            traceId:
+              type: string
+              description: Correlation id for tracing
+              example: "a12bc34d-56ef-78gh-90ij-1234567890ab"
+
+        ProductPage:
+          type: object
+          required: [ content, page, size, totalElements, totalPages ]
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Product'
+            page:
+              type: integer
+              minimum: 0
+            size:
+              type: integer
+              minimum: 1
+            totalElements:
+              type: integer
+              minimum: 0
+            totalPages:
+              type: integer
+              minimum: 0
+
+      responses:
+        BadRequest:
+          description: The request is invalid or malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+        NotFound:
+          description: The resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+        Conflict:
+          description: The request could not be completed due to a conflict (e.g. duplicate SKU)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+        Unauthorized:
+          description: Authentication is required or has failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+        Forbidden:
+          description: The client does not have access rights to the content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+        InternalServerError:
+          description: An unexpected error occurred on the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+
+
     Problem:
       type: object
       description: Standard error response based on RFC 7807

@@ -23,4 +23,8 @@ management:
 
 logging:
   level:
-    org.springframework.boot.context.config: DEBUG
+    root: ERROR
+    org.springframework: DEBUG
+    com.jorgeandreu: DEBUG
+
+debug: true

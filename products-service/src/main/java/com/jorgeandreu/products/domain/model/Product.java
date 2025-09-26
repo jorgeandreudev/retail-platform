@@ -12,5 +12,14 @@ public record Product(
         Integer stock,
         String category,
         Instant createdAt,
-        Instant updatedAt
-) {}
+        Instant updatedAt,
+        Instant deletedAt,
+        long version
+) {
+    public Product {
+    if (price.signum() < 0) throw new IllegalArgumentException("price must be >= 0");
+    if (stock < 0) throw new IllegalArgumentException("stock must be >= 0");
+    }
+    public boolean isDeleted() { return deletedAt != null; }
+}
+

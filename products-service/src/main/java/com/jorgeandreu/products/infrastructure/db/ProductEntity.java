@@ -1,6 +1,11 @@
 package com.jorgeandreu.products.infrastructure.db;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
@@ -10,6 +15,11 @@ import java.util.UUID;
 @Entity
 @Table(name = "products",
         uniqueConstraints = @UniqueConstraint(name = "uk_products_sku", columnNames = "sku"))
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProductEntity {
 
     @Id
@@ -32,27 +42,24 @@ public class ProductEntity {
     @Column(nullable = false, length = 100)
     private String category;
 
+    @Column(nullable = false, length = 100)
+    private String description;
+
+    @Column(nullable = false, length = 500)
+    private String text;
+
     @Column(nullable = false)
     private Instant createdAt;
 
     @Column(nullable = false)
     private Instant updatedAt;
 
+    private Instant deletedAt;
+
+    @Version
+    private long version;
+
     @PrePersist void onCreate() { var now = Instant.now(); createdAt = now; updatedAt = now; }
     @PreUpdate  void onUpdate() { updatedAt = Instant.now(); }
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-    public String getSku() { return sku; }
-    public void setSku(String sku) { this.sku = sku; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
-    public Integer getStock() { return stock; }
-    public void setStock(Integer stock) { this.stock = stock; }
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getUpdatedAt() { return updatedAt; }
 }
