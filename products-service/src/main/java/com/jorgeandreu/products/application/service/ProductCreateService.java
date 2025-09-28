@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class ProductService implements CreateProductUseCase {
+public class ProductCreateService implements CreateProductUseCase {
 
     @Value("${products.initial-version:0}")
     private long initialVersion;

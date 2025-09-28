@@ -28,3 +28,6 @@ logging:
     com.jorgeandreu: DEBUG
 
 debug: true
+
+products:
+  initial-version: 1
