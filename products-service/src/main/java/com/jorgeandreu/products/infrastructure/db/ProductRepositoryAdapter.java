@@ -4,7 +4,7 @@ package com.jorgeandreu.products.infrastructure.db;
 import com.jorgeandreu.products.domain.model.Product;
 import com.jorgeandreu.products.domain.model.SearchCriteria;
 import com.jorgeandreu.products.domain.port.out.ProductRepositoryPort;
-import com.jorgeandreu.products.infrastructure.db.maper.ProductEntityMapper;
+import com.jorgeandreu.products.infrastructure.db.mapper.ProductEntityMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

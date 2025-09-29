@@ -33,6 +33,12 @@
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 		<lombok.version>1.18.30</lombok.version>
 		<sonar.organization>jorgeandreudev</sonar.organization>
+		<sonar.coverage.exclusions>
+			**/infrastructure/api/**,
+			**/ApiUtil.java,
+			**/ProductsServiceApplication.java,
+			**/WebResponseUtil.java
+		</sonar.coverage.exclusions>
 	</properties>
 	<dependencies>
 
@@ -126,7 +132,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.jorgeandreu.products_service.ProductsServiceApplication</mainClass>
+					<mainClass>com.jorgeandreu.products.ProductsServiceApplication</mainClass>
 				</configuration>
 			</plugin>
 			<plugin>

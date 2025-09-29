@@ -1,4 +1,4 @@
-package com.jorgeandreu.products_service;
+package com.jorgeandreu.products;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,4 @@
-package com.jorgeandreu.products_service;
+package com.jorgeandreu.products;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
