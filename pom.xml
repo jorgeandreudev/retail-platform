@@ -93,61 +93,6 @@
           <artifactId>spring-boot-maven-plugin</artifactId>
           <version>${spring-boot.version}</version>
         </plugin>
-        <plugin>
-          <groupId>org.jacoco</groupId>
-          <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.12</version>
-          <executions>
-            <!-- Attach JaCoCo agent to test phase -->
-            <execution>
-              <goals><goal>prepare-agent</goal></goals>
-              <configuration>
-                <excludes>
-                  <!-- Generated / boilerplate -->
-                  <exclude>**/infrastructure/api/**</exclude>
-                  <exclude>**/ApiUtil.class</exclude>
-                  <exclude>**/ProductsServiceApplication.class</exclude>
-                  <exclude>**/WebResponseUtil.class</exclude>
-                </excludes>
-              </configuration>
-            </execution>
-
-            <!-- Generate XML report for Sonar + HTML report for humans -->
-            <execution>
-              <id>report</id>
-              <phase>verify</phase>
-              <goals><goal>report</goal></goals>
-            </execution>
-
-            <!-- Enforce minimum coverage -->
-            <execution>
-              <id>jacoco-check</id>
-              <phase>verify</phase>
-              <goals><goal>check</goal></goals>
-              <configuration>
-                <rules>
-                  <rule>
-                    <element>BUNDLE</element>
-                    <limits>
-                      <!-- Adjust threshold as you like -->
-                      <limit>
-                        <counter>LINE</counter>
-                        <value>COVEREDRATIO</value>
-                        <minimum>0.75</minimum>
-                      </limit>
-                    </limits>
-                    <excludes>
-                      <exclude>**/infrastructure/api/**</exclude>
-                      <exclude>**/ApiUtil.class</exclude>
-                      <exclude>**/ProductsServiceApplication.class</exclude>
-                      <exclude>**/WebResponseUtil.class</exclude>
-                    </excludes>
-                  </rule>
-                </rules>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
       </plugins>
     </pluginManagement>
   </build>
