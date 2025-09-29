@@ -1,4 +1,4 @@
-package com.jorgeandreu.products.infrastructure.db.maper;
+package com.jorgeandreu.products.infrastructure.db.mapper;
 
 import com.jorgeandreu.products.domain.model.PageResult;
 import com.jorgeandreu.products.domain.model.Product;

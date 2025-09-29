@@ -33,6 +33,12 @@
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 		<lombok.version>1.18.30</lombok.version>
 		<sonar.organization>jorgeandreudev</sonar.organization>
+		<sonar.coverage.exclusions>
+			**/infrastructure/api/**,
+			**/ApiUtil.java,
+			**/ProductsServiceApplication.java,
+			**/WebResponseUtil.java
+		</sonar.coverage.exclusions>
 	</properties>
 	<dependencies>
 
@@ -104,6 +110,20 @@
 			<version>0.2.7</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<version>5.18.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>3.27.3</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -112,7 +132,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.jorgeandreu.products_service.ProductsServiceApplication</mainClass>
+					<mainClass>com.jorgeandreu.products.ProductsServiceApplication</mainClass>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -222,6 +242,73 @@
 					<target>21</target>
 					<compilerArgs>--enable-preview</compilerArgs>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+
+				<!-- EXCLUSIONES COMUNES (aplican a prepare-agent y report) -->
+				<configuration>
+					<excludes>
+						<!-- OpenAPI generated API layer -->
+						<exclude>**/infrastructure/api/**</exclude>
+						<exclude>**/*Api.class</exclude>
+						<exclude>**/*ApiController*.class</exclude>
+						<exclude>**/*ApiDelegate*.class</exclude>
+						<exclude>**/*ApiUtil.class</exclude>
+
+						<!-- App bootstrap / utilidades no testeables -->
+						<exclude>**/*Application.class</exclude>
+						<exclude>**/infrastructure/web/util/**</exclude>
+					</excludes>
+				</configuration>
+
+				<executions>
+					<!-- Instrumentación -->
+					<execution>
+						<goals><goal>prepare-agent</goal></goals>
+					</execution>
+
+					<!-- Reporte XML/HTML -->
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals><goal>report</goal></goals>
+					</execution>
+
+					<!-- Enforce cobertura -->
+					<execution>
+						<id>jacoco-check</id>
+						<phase>verify</phase>
+						<goals><goal>check</goal></goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.75</minimum>
+										</limit>
+									</limits>
+									<!-- MUY IMPORTANTE: excluye aquí también -->
+									<excludes>
+										**/infrastructure/api/**,
+										**/*Api.class,
+										**/*ApiController*.class,
+										**/*ApiDelegate*.class,
+										**/*ApiUtil.class,
+										**/*Application.class,
+										**/infrastructure/web/util/**
+									</excludes>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
