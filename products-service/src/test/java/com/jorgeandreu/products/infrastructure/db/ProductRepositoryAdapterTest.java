@@ -219,6 +219,56 @@ class ProductRepositoryAdapterTest {
         verifyNoMoreInteractions(repository, mapper);
     }
 
+    @Test
+    @DisplayName("updateIfVersionMatches delegates to repository and returns updated row count")
+    void updateIfVersionMatches_delegates() {
+        UUID id = UUID.randomUUID();
+        Instant now = Instant.parse("2025-09-30T12:00:00Z");
+
+        when(repository.updateIfVersionMatches(eq(id), eq("ACME-1"), eq("Name"), any(), eq(5), eq("laptops"), eq(2L), eq(now)))
+                .thenReturn(1);
+
+        int updated = adapter.updateIfVersionMatches(id, "ACME-1", "Name", BigDecimal.TEN, 5, "laptops", 2L, now);
+
+        assertThat(updated).isEqualTo(1);
+        verify(repository).updateIfVersionMatches(eq(id), eq("ACME-1"), eq("Name"), eq(BigDecimal.TEN), eq(5), eq("laptops"), eq(2L), eq(now));
+        verifyNoMoreInteractions(repository, mapper);
+    }
+
+    @Test
+    @DisplayName("updateIfVersionMatches propagates DataIntegrityViolationException (SKU unique)")
+    void updateIfVersionMatches_propagatesDataIntegrityViolation() {
+        UUID id = UUID.randomUUID();
+        Instant now = Instant.parse("2025-09-30T12:30:00Z");
+
+        when(repository.updateIfVersionMatches(any(), anyString(), anyString(), any(), anyInt(), anyString(), anyLong(), any()))
+                .thenThrow(new org.springframework.dao.DataIntegrityViolationException("unique"));
+
+        org.springframework.dao.DataIntegrityViolationException ex =
+                org.junit.jupiter.api.Assertions.assertThrows(
+                        org.springframework.dao.DataIntegrityViolationException.class,
+                        () -> adapter.updateIfVersionMatches(id, "ACME-1", "Name", BigDecimal.ONE, 1, "laptops", 0L, now)
+                );
+
+        assertThat(ex).hasMessageContaining("unique");
+        verify(repository).updateIfVersionMatches(any(), anyString(), anyString(), any(), anyInt(), anyString(), anyLong(), any());
+        verifyNoMoreInteractions(repository, mapper);
+    }
+
+    @Test
+    @DisplayName("existsActiveById delegates to repository")
+    void existsActiveById_delegates() {
+        UUID id = UUID.randomUUID();
+        when(repository.existsByIdAndDeletedAtIsNull(id)).thenReturn(true);
+
+        boolean exists = adapter.existsActiveById(id);
+
+        assertThat(exists).isTrue();
+        verify(repository).existsByIdAndDeletedAtIsNull(id);
+        verifyNoMoreInteractions(repository, mapper);
+    }
+
+
 
 
     private static Product validProduct(String sku, String name) {

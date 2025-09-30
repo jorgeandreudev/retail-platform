@@ -1,12 +1,14 @@
 package com.jorgeandreu.products.infrastructure.web;
+
 import com.jorgeandreu.products.application.exception.ProductNotFoundException;
+import com.jorgeandreu.products.application.exception.ProductVersionConflictException;
 import com.jorgeandreu.products.application.exception.SkuAlreadyExistsException;
 import com.jorgeandreu.products.infrastructure.api.model.Problem;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 import java.net.URI;
@@ -74,6 +76,17 @@ public class GlobalExceptionHandler {
                 .type(URI.create(URI.create("https://example.com/problems/internal-error").toString()))
                 .instance(path(req));
         return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(p);
+    }
+
+    @ExceptionHandler(ProductVersionConflictException.class)
+    public ResponseEntity<Problem> handleVersionConflict(ProductVersionConflictException ex, WebRequest req) {
+        var p = new Problem()
+                .title("Version conflict")
+                .status(CONFLICT.value())
+                .detail(ex.getMessage()) // e.g. "Version conflict updating product <id> with expected version <n>"
+                .type(URI.create(URI.create("https://example.com/problems/version-conflict").toString()))
+                .instance(path(req));
+        return ResponseEntity.status(CONFLICT).body(p);
     }
 
     private URI path(WebRequest req) {

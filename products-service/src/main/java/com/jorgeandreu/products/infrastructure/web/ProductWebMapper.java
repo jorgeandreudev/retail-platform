@@ -3,10 +3,12 @@ package com.jorgeandreu.products.infrastructure.web;
 import com.jorgeandreu.products.domain.model.PageResult;
 import com.jorgeandreu.products.domain.port.in.CreateProductCommand;
 import com.jorgeandreu.products.domain.port.in.SearchCriteriaCommand;
+import com.jorgeandreu.products.domain.port.in.UpdateProductCommand;
 import com.jorgeandreu.products.infrastructure.api.model.CreateProductRequest;
 import com.jorgeandreu.products.infrastructure.api.model.Product;
 import com.jorgeandreu.products.infrastructure.api.model.ProductPage;
 import com.jorgeandreu.products.infrastructure.api.model.ProductSearchCriteriaRequest;
+import com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -30,5 +32,7 @@ public interface ProductWebMapper {
 
     @Mapping(target = "content", qualifiedByName = "toApi")
     ProductPage toApi(PageResult<com.jorgeandreu.products.domain.model.Product> pageResult);
+
+    UpdateProductCommand toCommand(UpdateProductRequest req);
 
 }

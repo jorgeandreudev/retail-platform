@@ -8,10 +8,13 @@ import com.jorgeandreu.products.domain.port.in.DeleteProductUseCase;
 import com.jorgeandreu.products.domain.port.in.GetProductUseCase;
 import com.jorgeandreu.products.domain.port.in.ListProductsUseCase;
 import com.jorgeandreu.products.domain.port.in.SearchCriteriaCommand;
+import com.jorgeandreu.products.domain.port.in.UpdateProductCommand;
+import com.jorgeandreu.products.domain.port.in.UpdateProductUseCase;
 import com.jorgeandreu.products.infrastructure.api.model.CreateProductRequest;
 import com.jorgeandreu.products.infrastructure.api.model.ProductPage;
 import com.jorgeandreu.products.infrastructure.api.model.ProductSearchCriteriaRequest;
 import com.jorgeandreu.products.infrastructure.api.model.ProductSearchCriteriaRequestFilters;
+import com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +44,7 @@ class ProductsApiDelegateImplTest {
     @Mock private CreateProductUseCase createProductUC;
     @Mock private ListProductsUseCase listProductUC;
     @Mock private DeleteProductUseCase deleteProductUC;
+    @Mock private UpdateProductUseCase updateProductUC;
     @Mock private ProductWebMapper webMapper;
 
     @InjectMocks
@@ -188,5 +192,41 @@ class ProductsApiDelegateImplTest {
 
         verify(deleteProductUC).deleteById(id);
         verifyNoInteractions(webMapper, listProductUC, getProduct, createProductUC);
+    }
+
+    @Test
+    void updateProductById_returnsOkWithUpdatedProduct() {
+        UUID id = UUID.randomUUID();
+
+        var req = new UpdateProductRequest()
+                .sku("ACME-9").name("New Name").price(777.77).stock(9).category("laptops").version(2);
+
+        var cmd = new UpdateProductCommand("ACME-9", "New Name",
+                BigDecimal.valueOf(777.77), 9, "laptops", 2);
+
+        when(webMapper.toCommand(req)).thenReturn(cmd);
+
+        Product updated = new Product(
+                id, "ACME-9", "New Name", BigDecimal.valueOf(777.77), 9, "laptops",
+                Instant.now(), Instant.now(), null, 3L
+        );
+
+        var apiProduct = new com.jorgeandreu.products.infrastructure.api.model.Product()
+                .id(id).sku("ACME-9").name("New Name").price(777.77).stock(9).category("laptops");
+
+        when(getProduct.getById(id)).thenReturn(updated);
+        when(webMapper.toApi(updated)).thenReturn(apiProduct);
+
+        ResponseEntity<com.jorgeandreu.products.infrastructure.api.model.Product> resp =
+                delegate.updateProductById(id, req);
+
+        assertThat(resp.getStatusCode().value()).isEqualTo(200);
+        assertThat(Objects.requireNonNull(resp.getBody()).getId()).isEqualTo(id);
+
+        verify(updateProductUC).updateById(id, cmd);
+        verify(getProduct).getById(id);
+        verify(webMapper).toApi(updated);
+        verify(webMapper).toCommand(req);
+        verifyNoMoreInteractions(updateProductUC, getProduct, webMapper, createProductUC, listProductUC);
     }
 }

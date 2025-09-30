@@ -103,7 +103,7 @@ class ProductWebMapperTest {
 
         @Test @DisplayName("returns null when request is null")
         void nullRequest() {
-            CreateProductCommand cmd = mapper.toCommand(null);
+            CreateProductCommand cmd = mapper.toCommand((CreateProductRequest) null);
             assertThat(cmd).isNull();
         }
 
@@ -260,4 +260,98 @@ class ProductWebMapperTest {
             assertThat(api.getContent().get(1)).isNull();
         }
     }
+
+    @Nested
+    @DisplayName("toCommand(UpdateProductRequest)")
+    class ToCommandUpdateRequest {
+
+        @Test
+        @DisplayName("maps all fields (double → BigDecimal, version preserved)")
+        void mapsAllFields() {
+            var req = new com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest()
+                    .sku("ACME-123")
+                    .name("Gaming Laptop")
+                    .price(1499.99)
+                    .stock(7)
+                    .category("laptops")
+                    .version(3);
+
+            var cmd = mapper.toCommand(req);
+
+            assertThat(cmd).isNotNull();
+            assertThat(cmd.sku()).isEqualTo("ACME-123");
+            assertThat(cmd.name()).isEqualTo("Gaming Laptop");
+            assertThat(cmd.price()).isEqualByComparingTo(BigDecimal.valueOf(1499.99));
+            assertThat(cmd.stock()).isEqualTo(7);
+            assertThat(cmd.category()).isEqualTo("laptops");
+            assertThat(cmd.version()).isEqualTo(3L);
+        }
+
+        @Test
+        @DisplayName("null version → defaults to 0 (price provided)")
+        void nullVersionDefaultsToZero() {
+            var req = new com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest()
+                    .sku("ACME-456")
+                    .name("Ultrabook")
+                    .price(999.0)
+                    .stock(5)
+                    .category("laptops");
+
+            var cmd = mapper.toCommand(req);
+
+            assertThat(cmd).isNotNull();
+            assertThat(cmd.version()).isZero();
+            assertThat(cmd.price()).isEqualByComparingTo(BigDecimal.valueOf(999.0));
+            assertThat(cmd.stock()).isEqualTo(5);
+        }
+
+        @Test
+        @DisplayName("throws when price is null")
+        void throwsWhenPriceIsNull() {
+            var req = new com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest()
+                    .sku("ACME-789")
+                    .name("Pro")
+                    .stock(1)
+                    .category("laptops")
+                    .version(1);
+
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> mapper.toCommand(req));
+        }
+
+        @Test
+        @DisplayName("throws when price is negative")
+        void throwsWhenPriceIsNegative() {
+            var req = new com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest()
+                    .sku("ACME-000")
+                    .name("Bad")
+                    .price(-1.0)
+                    .stock(1)
+                    .category("laptops")
+                    .version(1);
+
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> mapper.toCommand(req));
+        }
+
+        @Test
+        @DisplayName("throws when stock is negative")
+        void throwsWhenStockIsNegative() {
+            var req = new com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest()
+                    .sku("ACME-001")
+                    .name("Bad Stock")
+                    .price(10.0)
+                    .stock(-5)
+                    .category("laptops")
+                    .version(1);
+
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> mapper.toCommand(req));
+        }
+
+        @Test
+        @DisplayName("returns null when request is null")
+        void returnsNullWhenRequestIsNull() {
+            var cmd = mapper.toCommand((com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest) null);
+            assertThat(cmd).isNull();
+        }
+    }
+
 }

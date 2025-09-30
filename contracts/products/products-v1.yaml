@@ -115,6 +115,38 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+    put:
+      tags: [ Products ]
+      summary: Update a product by id (optimistic locking)
+      operationId: updateProductById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductRequest'
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflict (version mismatch or SKU already exists)
+          content:
+            application/json:
+              schema:
+                $ref: '../common/components.yaml#/components/schemas/Problem'
+
 
 components:
   schemas:
@@ -220,3 +252,14 @@ components:
           type: boolean
           default: false
       additionalProperties: false
+
+    UpdateProductRequest:
+      type: object
+      required: [ sku, name, price, stock, category, version ]
+      properties:
+        sku: { type: string, minLength: 1, example: "ACME-123" }
+        name: { type: string, minLength: 1, example: "Laptop Pro 14" }
+        price: { type: number, format: double, minimum: 0, example: 1199.99 }
+        stock: { type: integer, minimum: 0, example: 12 }
+        category: { type: string, minLength: 1, example: "laptops" }
+        version: { type: integer, minimum: 0, example: 3 }
