@@ -3,6 +3,7 @@ package com.jorgeandreu.products.infrastructure.web;
 import com.jorgeandreu.products.domain.model.PageResult;
 import com.jorgeandreu.products.domain.model.Product;
 import com.jorgeandreu.products.domain.port.in.CreateProductUseCase;
+import com.jorgeandreu.products.domain.port.in.DeleteProductUseCase;
 import com.jorgeandreu.products.domain.port.in.GetProductUseCase;
 import com.jorgeandreu.products.domain.port.in.ListProductsUseCase;
 import com.jorgeandreu.products.infrastructure.api.ProductsApiDelegate;
@@ -24,12 +25,13 @@ public class ProductsApiDelegateImpl implements ProductsApiDelegate {
 
     private final GetProductUseCase getProduct;
 
-
     private final ProductWebMapper webMapper;
 
     private final CreateProductUseCase createProductUC;
 
     private final ListProductsUseCase listProductUC;
+
+    private final DeleteProductUseCase deleteProductUC;
 
     @Override
     public ResponseEntity<com.jorgeandreu.products.infrastructure.api.model.Product> createProduct(CreateProductRequest req) {
@@ -53,5 +55,11 @@ public class ProductsApiDelegateImpl implements ProductsApiDelegate {
         var criteria = webMapper.productSearchCriteriaToSearchCriteria(productCriteria);
         PageResult<Product> page = listProductUC.list(criteria);
         return ResponseEntity.ok().body(webMapper.toApi(page));
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteProductById(UUID id) {
+        deleteProductUC.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

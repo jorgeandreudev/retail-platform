@@ -206,4 +206,52 @@ class ProductsApiControllerStandaloneTest {
                     .andExpect(jsonPath("$.content[1].sku", is("ACME-2")));
         }
     }
+
+    @Nested
+    class DeleteProductById {
+
+        @Test
+        @DisplayName("204 No Content when deletion succeeds")
+        void noContentOnSuccess() throws Exception {
+            UUID id = UUID.randomUUID();
+
+            Mockito.when(delegate.deleteProductById(ArgumentMatchers.eq(id)))
+                    .thenReturn(ResponseEntity.noContent().build());
+
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                            .delete(PRODUCTS + "/" + id))
+                    .andExpect(status().isNoContent());
+
+            Mockito.verify(delegate).deleteProductById(ArgumentMatchers.eq(id));
+            Mockito.verifyNoMoreInteractions(delegate);
+        }
+
+        @Test
+        @DisplayName("404 Not Found when product doesn't exist or already deleted")
+        void notFoundWhenMissingOrDeleted() throws Exception {
+            UUID id = UUID.randomUUID();
+
+            Mockito.when(delegate.deleteProductById(ArgumentMatchers.eq(id)))
+                    .thenReturn(ResponseEntity.notFound().build());
+
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                            .delete(PRODUCTS + "/" + id))
+                    .andExpect(status().isNotFound());
+
+            Mockito.verify(delegate).deleteProductById(ArgumentMatchers.eq(id));
+            Mockito.verifyNoMoreInteractions(delegate);
+        }
+
+        @Test
+        @DisplayName("400 Bad Request when id is not a valid UUID")
+        void badRequestOnInvalidUuid() throws Exception {
+            String invalidId = "not-a-uuid";
+
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                            .delete(PRODUCTS + "/" + invalidId))
+                    .andExpect(status().isBadRequest());
+
+            Mockito.verifyNoInteractions(delegate);
+        }
+    }
 }

@@ -11,7 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -65,6 +67,13 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
         return mapper.toDomain(page);
     }
 
+    @Override
+    @Transactional
+    public boolean softDeleteById(UUID id, Instant deletedAt) {
+        int updated = repository.softDeleteIfNotDeleted(id, deletedAt);
+        return updated == 1;
+    }
+
     // --- Specifications (static helpers) ---
     private Specification<ProductEntity> visibility(boolean includeDeleted) {
         return (root, q, cb) -> includeDeleted ? cb.conjunction() : cb.isNull(root.get("deletedAt"));
@@ -97,4 +106,5 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
         Sort.Direction dir = (parts.length > 1 && "asc".equalsIgnoreCase(parts[1])) ? Sort.Direction.ASC : Sort.Direction.DESC;
         return Sort.by(dir, prop);
     }
+
 }
