@@ -340,4 +340,76 @@ class ProductsApiControllerStandaloneTest {
             Mockito.verifyNoInteractions(delegate);
         }
     }
+
+    @Nested
+    class ListProducts {
+
+        @Test
+        @DisplayName("200 OK returns a page of products (GET /products)")
+        void okList() throws Exception {
+            var p1 = new Product()
+                    .id(UUID.randomUUID()).sku("ACME-1").name("Laptop 13")
+                    .price(999.0).stock(3).category("laptops");
+            var p2 = new Product()
+                    .id(UUID.randomUUID()).sku("ACME-2").name("Laptop 15")
+                    .price(1299.0).stock(8).category("laptops");
+
+            var page = new ProductPage()
+                    .page(0).size(2).totalPages(1).totalElements(2)
+                    .content(List.of(p1, p2));
+
+            Mockito.when(delegate.listProducts(
+                            ArgumentMatchers.eq(0),
+                            ArgumentMatchers.eq(2),
+                            ArgumentMatchers.eq("createdAt,desc"),
+                            ArgumentMatchers.eq(false)))
+                    .thenReturn(ResponseEntity.ok(page));
+
+            mvc.perform(get(PRODUCTS)
+                            .param("page", "0")
+                            .param("size", "2")
+                            .param("sort", "createdAt,desc")
+                            .param("includeDeleted", "false"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.page", is(0)))
+                    .andExpect(jsonPath("$.size", is(2)))
+                    .andExpect(jsonPath("$.totalElements", is(2)))
+                    .andExpect(jsonPath("$.content[0].sku", is("ACME-1")))
+                    .andExpect(jsonPath("$.content[1].sku", is("ACME-2")));
+
+            Mockito.verify(delegate).listProducts(0, 2, "createdAt,desc", false);
+            Mockito.verifyNoMoreInteractions(delegate);
+        }
+
+        @Test
+        @DisplayName("200 OK with defaults when no query params are provided")
+        void okListWithDefaults() throws Exception {
+            var page = new ProductPage()
+                    .page(0).size(20).totalPages(0).totalElements(0)
+                    .content(List.of());
+
+            Mockito.when(delegate.listProducts(
+                    ArgumentMatchers.<Integer>any(),
+                    ArgumentMatchers.<Integer>any(),
+                    ArgumentMatchers.<String>any(),
+                    ArgumentMatchers.<Boolean>any()
+            )).thenReturn(ResponseEntity.ok(page));
+
+            mvc.perform(get(PRODUCTS))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.page", is(0)))
+                    .andExpect(jsonPath("$.size", is(20)))
+                    .andExpect(jsonPath("$.totalElements", is(0)));
+
+            Mockito.verify(delegate).listProducts(
+                    ArgumentMatchers.argThat(p -> p == null || p == 0),
+                    ArgumentMatchers.argThat(s -> s == null || s == 20),
+                    ArgumentMatchers.isNull(),
+                    ArgumentMatchers.argThat(b -> b == null || !b)
+            );
+            Mockito.verifyNoMoreInteractions(delegate);
+        }
+    }
 }

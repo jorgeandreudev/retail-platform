@@ -6,6 +6,7 @@ import com.jorgeandreu.products.domain.port.in.CreateProductUseCase;
 import com.jorgeandreu.products.domain.port.in.DeleteProductUseCase;
 import com.jorgeandreu.products.domain.port.in.GetProductUseCase;
 import com.jorgeandreu.products.domain.port.in.ListProductsUseCase;
+import com.jorgeandreu.products.domain.port.in.SearchCriteriaCommand;
 import com.jorgeandreu.products.domain.port.in.UpdateProductUseCase;
 import com.jorgeandreu.products.infrastructure.api.ProductsApiDelegate;
 import com.jorgeandreu.products.infrastructure.api.model.CreateProductRequest;
@@ -73,5 +74,21 @@ public class ProductsApiDelegateImpl implements ProductsApiDelegate {
         updateProductUC.updateById(id, cmd);
         Product product = getProduct.getById(id);
         return ResponseEntity.ok(webMapper.toApi(product));
+    }
+
+    @Override
+    public ResponseEntity<ProductPage> listProducts(Integer page, Integer size, String sort, Boolean includeDeleted) {
+        var cmd = new SearchCriteriaCommand(
+                page == null ? 0 : page,
+                size == null ? 20 : size,
+                sort,
+                null,
+                null,
+                null,
+                null,
+                includeDeleted != null && includeDeleted
+        );
+        PageResult<Product> pageResult = listProductUC.list(cmd);
+        return ResponseEntity.ok().body(webMapper.toApi(pageResult));
     }
 }
