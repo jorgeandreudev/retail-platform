@@ -1,8 +1,10 @@
 package com.jorgeandreu.products.infrastructure.web;
 
+import com.jorgeandreu.products.application.exception.ProductNotFoundException;
 import com.jorgeandreu.products.domain.model.PageResult;
 import com.jorgeandreu.products.domain.model.Product;
 import com.jorgeandreu.products.domain.port.in.CreateProductUseCase;
+import com.jorgeandreu.products.domain.port.in.DeleteProductUseCase;
 import com.jorgeandreu.products.domain.port.in.GetProductUseCase;
 import com.jorgeandreu.products.domain.port.in.ListProductsUseCase;
 import com.jorgeandreu.products.domain.port.in.SearchCriteriaCommand;
@@ -29,6 +31,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -37,6 +40,7 @@ class ProductsApiDelegateImplTest {
     @Mock private GetProductUseCase getProduct;
     @Mock private CreateProductUseCase createProductUC;
     @Mock private ListProductsUseCase listProductUC;
+    @Mock private DeleteProductUseCase deleteProductUC;
     @Mock private ProductWebMapper webMapper;
 
     @InjectMocks
@@ -152,5 +156,37 @@ class ProductsApiDelegateImplTest {
         verify(listProductUC).list(criteriaCmd);
         verify(webMapper).toApi(pageResult);
         verifyNoMoreInteractions(webMapper, listProductUC, getProduct, createProductUC);
+    }
+
+    @Test
+    void deleteProductById_returnsNoContent() {
+        UUID id = UUID.randomUUID();
+
+        doNothing().when(deleteProductUC).deleteById(id);
+
+        ResponseEntity<Void> response = delegate.deleteProductById(id);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(204);
+        assertThat(response.getBody()).isNull();
+
+        verify(deleteProductUC).deleteById(id);
+
+        verifyNoInteractions(webMapper, listProductUC, getProduct, createProductUC);
+    }
+
+    @Test
+    void deleteProductById_whenUseCaseThrowsNotFound_propagatesException() {
+        UUID id = UUID.randomUUID();
+
+        doThrow(new ProductNotFoundException(id))
+                .when(deleteProductUC).deleteById(id);
+
+        ProductNotFoundException ex = assertThrows(ProductNotFoundException.class,
+                () -> delegate.deleteProductById(id));
+
+        assertThat(ex.getMessage()).isEqualTo("Product not found: " + id);
+
+        verify(deleteProductUC).deleteById(id);
+        verifyNoInteractions(webMapper, listProductUC, getProduct, createProductUC);
     }
 }

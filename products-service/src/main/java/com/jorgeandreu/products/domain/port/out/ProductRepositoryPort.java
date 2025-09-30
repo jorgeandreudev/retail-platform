@@ -4,6 +4,7 @@ import com.jorgeandreu.products.domain.model.PageResult;
 import com.jorgeandreu.products.domain.model.Product;
 import com.jorgeandreu.products.domain.model.SearchCriteria;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,4 +13,5 @@ public interface ProductRepositoryPort {
     Product save(Product product);
     Optional<Product> findById(UUID id);
     PageResult<Product> search(SearchCriteria criteria);
+    boolean softDeleteById(UUID id, Instant deletedAt);
 }

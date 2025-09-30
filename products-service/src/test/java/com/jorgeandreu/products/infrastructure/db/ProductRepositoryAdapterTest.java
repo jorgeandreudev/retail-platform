@@ -182,6 +182,44 @@ class ProductRepositoryAdapterTest {
         verifyNoMoreInteractions(repository, mapper);
     }
 
+    @Test
+    @DisplayName("softDeleteById returns true when repository updates 1 row")
+    void softDeleteById_success() {
+        UUID id = UUID.randomUUID();
+        Instant deletedAt = Instant.parse("2025-09-30T10:00:00Z");
+
+        when(repository.softDeleteIfNotDeleted(eq(id), eq(deletedAt))).thenReturn(1);
+
+        boolean result = adapter.softDeleteById(id, deletedAt);
+
+        assertThat(result).isTrue();
+
+        ArgumentCaptor<UUID> idCaptor = ArgumentCaptor.forClass(UUID.class);
+        ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
+
+        verify(repository).softDeleteIfNotDeleted(idCaptor.capture(), instantCaptor.capture());
+        assertThat(idCaptor.getValue()).isEqualTo(id);
+        assertThat(instantCaptor.getValue()).isEqualTo(deletedAt);
+
+        verifyNoMoreInteractions(repository, mapper);
+    }
+
+    @Test
+    @DisplayName("softDeleteById returns false when repository updates 0 rows (missing or already deleted)")
+    void softDeleteById_noop() {
+        UUID id = UUID.randomUUID();
+        Instant deletedAt = Instant.parse("2025-09-30T11:00:00Z");
+
+        when(repository.softDeleteIfNotDeleted(eq(id), eq(deletedAt))).thenReturn(0);
+
+        boolean result = adapter.softDeleteById(id, deletedAt);
+
+        assertThat(result).isFalse();
+        verify(repository).softDeleteIfNotDeleted(id, deletedAt);
+        verifyNoMoreInteractions(repository, mapper);
+    }
+
+
 
     private static Product validProduct(String sku, String name) {
         return new Product(
