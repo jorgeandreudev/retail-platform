@@ -18,6 +18,7 @@ import com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -229,4 +230,81 @@ class ProductsApiDelegateImplTest {
         verify(webMapper).toCommand(req);
         verifyNoMoreInteractions(updateProductUC, getProduct, webMapper, createProductUC, listProductUC);
     }
+
+    @Test
+    void listProducts_simpleQuery_returnsPage() {
+        Integer page = 1, size = 5; String sort = "name,asc"; Boolean includeDeleted = true;
+
+        var p = new Product(
+                UUID.randomUUID(), "ACME-7", "Desk", BigDecimal.TEN, 1,
+                "furniture", Instant.now(), Instant.now(), null, 0L
+        );
+        var pageResult = new PageResult<>(List.of(p), 1, 5, 1, 1);
+        when(listProductUC.list(any(SearchCriteriaCommand.class))).thenReturn(pageResult);
+
+        var apiPage = new com.jorgeandreu.products.infrastructure.api.model.ProductPage()
+                .page(1).size(5).totalPages(1).totalElements(1);
+        when(webMapper.toApi(pageResult)).thenReturn(apiPage);
+
+        var resp = delegate.listProducts(page, size, sort, includeDeleted);
+
+        assertThat(resp.getStatusCode().value()).isEqualTo(200);
+        assertThat(resp.getBody()).isSameAs(apiPage);
+
+        ArgumentCaptor<SearchCriteriaCommand> captor = ArgumentCaptor.forClass(SearchCriteriaCommand.class);
+        verify(listProductUC).list(captor.capture());
+        SearchCriteriaCommand used = captor.getValue();
+        assertThat(used.page()).isEqualTo(1);
+        assertThat(used.size()).isEqualTo(5);
+        assertThat(used.sort()).isEqualTo("name,asc");
+        assertThat(used.includeDeleted()).isTrue();
+        assertThat(used.category()).isNull();
+        assertThat(used.minPrice()).isNull();
+        assertThat(used.maxPrice()).isNull();
+        assertThat(used.text()).isNull();
+
+        verify(webMapper).toApi(pageResult);
+        verifyNoMoreInteractions(webMapper, listProductUC, getProduct, createProductUC);
+    }
+
+    @Test
+    void listProducts_defaultsWhenNullParams_returnsPage() {
+        Integer page = null, size = null; String sort = null; Boolean includeDeleted = null;
+
+        var p = new Product(
+                UUID.randomUUID(), "ACME-8", "Chair", BigDecimal.ONE, 2,
+                "furniture", Instant.now(), Instant.now(), null, 0L
+        );
+        var pageResult = new PageResult<>(List.of(p), 0, 20, 1, 1);
+        when(listProductUC.list(any(SearchCriteriaCommand.class))).thenReturn(pageResult);
+
+        var apiPage = new com.jorgeandreu.products.infrastructure.api.model.ProductPage()
+                .page(0).size(20).totalPages(1).totalElements(1);
+        when(webMapper.toApi(pageResult)).thenReturn(apiPage);
+
+        // when
+        var resp = delegate.listProducts(page, size, sort, includeDeleted);
+
+        // then
+        assertThat(resp.getStatusCode().value()).isEqualTo(200);
+        assertThat(resp.getBody()).isSameAs(apiPage);
+
+        ArgumentCaptor<SearchCriteriaCommand> captor = ArgumentCaptor.forClass(SearchCriteriaCommand.class);
+        verify(listProductUC).list(captor.capture());
+        SearchCriteriaCommand used = captor.getValue();
+
+        assertThat(used.page()).isZero();
+        assertThat(used.size()).isEqualTo(20);
+        assertThat(used.sort()).isNull();
+        assertThat(used.includeDeleted()).isFalse();
+
+        assertThat(used.category()).isNull();
+        assertThat(used.minPrice()).isNull();
+        assertThat(used.maxPrice()).isNull();
+        assertThat(used.text()).isNull();
+
+        verify(webMapper).toApi(pageResult);
+        verifyNoMoreInteractions(webMapper, listProductUC, getProduct, createProductUC);
+    }
+
 }

@@ -235,54 +235,43 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>21</source>
-					<target>21</target>
-					<compilerArgs>--enable-preview</compilerArgs>
-				</configuration>
-			</plugin>
-
-			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.12</version>
 
-				<!-- EXCLUSIONES COMUNES (aplican a prepare-agent y report) -->
 				<configuration>
 					<excludes>
-						<!-- OpenAPI generated API layer -->
 						<exclude>**/infrastructure/api/**</exclude>
 						<exclude>**/*Api.class</exclude>
 						<exclude>**/*ApiController*.class</exclude>
-						<exclude>**/*ApiDelegate*.class</exclude>
 						<exclude>**/*ApiUtil.class</exclude>
 
-						<!-- App bootstrap / utilidades no testeables -->
 						<exclude>**/*Application.class</exclude>
 						<exclude>**/infrastructure/web/util/**</exclude>
 					</excludes>
 				</configuration>
 
 				<executions>
-					<!-- Instrumentación -->
 					<execution>
-						<goals><goal>prepare-agent</goal></goals>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
 					</execution>
 
-					<!-- Reporte XML/HTML -->
 					<execution>
 						<id>report</id>
 						<phase>verify</phase>
-						<goals><goal>report</goal></goals>
+						<goals>
+							<goal>report</goal>
+						</goals>
 					</execution>
 
-					<!-- Enforce cobertura -->
 					<execution>
 						<id>jacoco-check</id>
 						<phase>verify</phase>
-						<goals><goal>check</goal></goals>
+						<goals>
+							<goal>check</goal>
+						</goals>
 						<configuration>
 							<rules>
 								<rule>
@@ -294,15 +283,13 @@
 											<minimum>0.75</minimum>
 										</limit>
 									</limits>
-									<!-- MUY IMPORTANTE: excluye aquí también -->
 									<excludes>
-										**/infrastructure/api/**,
-										**/*Api.class,
-										**/*ApiController*.class,
-										**/*ApiDelegate*.class,
-										**/*ApiUtil.class,
-										**/*Application.class,
-										**/infrastructure/web/util/**
+										<exclude>**/infrastructure/api/**</exclude>
+										<exclude>**/*Api.class</exclude>
+										<exclude>**/*ApiController*.class</exclude>
+										<exclude>**/*ApiUtil.class</exclude>
+										<exclude>**/*Application.class</exclude>
+										<exclude>**/infrastructure/web/util/**</exclude>
 									</excludes>
 								</rule>
 							</rules>
