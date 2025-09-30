@@ -254,4 +254,90 @@ class ProductsApiControllerStandaloneTest {
             Mockito.verifyNoInteractions(delegate);
         }
     }
+
+    @Nested
+    class UpdateProductById {
+
+        @Test
+        @DisplayName("200 OK when update succeeds (returns updated product)")
+        void okOnSuccess() throws Exception {
+            UUID id = UUID.randomUUID();
+            var req = new com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest()
+                    .sku("ACME-9").name("New Name").price(777.77).stock(9).category("laptops").version(2);
+
+            var updated = new Product()
+                    .id(id).sku("ACME-9").name("New Name").price(777.77).stock(9).category("laptops");
+
+            Mockito.when(delegate.updateProductById(ArgumentMatchers.eq(id), ArgumentMatchers.any()))
+                    .thenReturn(ResponseEntity.ok(updated));
+
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                            .put(PRODUCTS + "/" + id)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req)))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id", is(id.toString())))
+                    .andExpect(jsonPath("$.sku", is("ACME-9")))
+                    .andExpect(jsonPath("$.name", is("New Name")));
+
+            Mockito.verify(delegate).updateProductById(ArgumentMatchers.eq(id), ArgumentMatchers.any());
+            Mockito.verifyNoMoreInteractions(delegate);
+        }
+
+        @Test
+        @DisplayName("409 Conflict on version mismatch or SKU conflict")
+        void conflictOnVersionOrSku() throws Exception {
+            UUID id = UUID.randomUUID();
+            var req = new com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest()
+                    .sku("ACME-1").name("N").price(1.0).stock(1).category("laptops").version(1);
+
+            Mockito.when(delegate.updateProductById(ArgumentMatchers.eq(id), ArgumentMatchers.any()))
+                    .thenReturn(ResponseEntity.status(409).build());
+
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                            .put(PRODUCTS + "/" + id)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req)))
+                    .andExpect(status().isConflict());
+
+            Mockito.verify(delegate).updateProductById(ArgumentMatchers.eq(id), ArgumentMatchers.any());
+            Mockito.verifyNoMoreInteractions(delegate);
+        }
+
+        @Test
+        @DisplayName("404 Not Found when product does not exist or is deleted")
+        void notFound() throws Exception {
+            UUID id = UUID.randomUUID();
+            var req = new com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest()
+                    .sku("ACME-1").name("N").price(1.0).stock(1).category("laptops").version(0);
+
+            Mockito.when(delegate.updateProductById(ArgumentMatchers.eq(id), ArgumentMatchers.any()))
+                    .thenReturn(ResponseEntity.notFound().build());
+
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                            .put(PRODUCTS + "/" + id)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req)))
+                    .andExpect(status().isNotFound());
+
+            Mockito.verify(delegate).updateProductById(ArgumentMatchers.eq(id), ArgumentMatchers.any());
+            Mockito.verifyNoMoreInteractions(delegate);
+        }
+
+        @Test
+        @DisplayName("400 Bad Request on invalid UUID")
+        void badRequestOnInvalidUuid() throws Exception {
+            var req = new com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest()
+                    .sku("ACME-1").name("N").price(1.0).stock(1).category("laptops").version(0);
+
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                            .put(PRODUCTS + "/not-a-uuid")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req)))
+                    .andExpect(status().isBadRequest());
+
+            Mockito.verifyNoInteractions(delegate);
+        }
+    }
 }

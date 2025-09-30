@@ -5,6 +5,7 @@ import com.jorgeandreu.products.domain.model.Product;
 import com.jorgeandreu.products.domain.model.SearchCriteria;
 import com.jorgeandreu.products.domain.port.out.ProductRepositoryPort;
 import com.jorgeandreu.products.infrastructure.db.mapper.ProductEntityMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
@@ -72,6 +74,16 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
     public boolean softDeleteById(UUID id, Instant deletedAt) {
         int updated = repository.softDeleteIfNotDeleted(id, deletedAt);
         return updated == 1;
+    }
+
+    @Override
+    public int updateIfVersionMatches(UUID id, String sku, String name, BigDecimal price, Integer stock, String category, long expectedVersion, Instant updatedAt) throws DataIntegrityViolationException {
+        return repository.updateIfVersionMatches(id, sku, name, price, stock, category, expectedVersion, updatedAt);
+    }
+
+    @Override
+    public boolean existsActiveById(UUID id) {
+        return repository.existsByIdAndDeletedAtIsNull(id);
     }
 
     // --- Specifications (static helpers) ---

@@ -6,10 +6,12 @@ import com.jorgeandreu.products.domain.port.in.CreateProductUseCase;
 import com.jorgeandreu.products.domain.port.in.DeleteProductUseCase;
 import com.jorgeandreu.products.domain.port.in.GetProductUseCase;
 import com.jorgeandreu.products.domain.port.in.ListProductsUseCase;
+import com.jorgeandreu.products.domain.port.in.UpdateProductUseCase;
 import com.jorgeandreu.products.infrastructure.api.ProductsApiDelegate;
 import com.jorgeandreu.products.infrastructure.api.model.CreateProductRequest;
 import com.jorgeandreu.products.infrastructure.api.model.ProductPage;
 import com.jorgeandreu.products.infrastructure.api.model.ProductSearchCriteriaRequest;
+import com.jorgeandreu.products.infrastructure.api.model.UpdateProductRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -32,6 +34,8 @@ public class ProductsApiDelegateImpl implements ProductsApiDelegate {
     private final ListProductsUseCase listProductUC;
 
     private final DeleteProductUseCase deleteProductUC;
+
+    private final UpdateProductUseCase updateProductUC;
 
     @Override
     public ResponseEntity<com.jorgeandreu.products.infrastructure.api.model.Product> createProduct(CreateProductRequest req) {
@@ -61,5 +65,13 @@ public class ProductsApiDelegateImpl implements ProductsApiDelegate {
     public ResponseEntity<Void> deleteProductById(UUID id) {
         deleteProductUC.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<com.jorgeandreu.products.infrastructure.api.model.Product> updateProductById(UUID id, UpdateProductRequest req) {
+        var cmd = webMapper.toCommand(req);
+        updateProductUC.updateById(id, cmd);
+        Product product = getProduct.getById(id);
+        return ResponseEntity.ok(webMapper.toApi(product));
     }
 }

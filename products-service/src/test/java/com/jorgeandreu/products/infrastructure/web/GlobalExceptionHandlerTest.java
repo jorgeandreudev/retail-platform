@@ -147,4 +147,30 @@ class GlobalExceptionHandlerTest {
             assertThat(p.getInstance()).isEqualTo(URI.create("/api/v1/products"));
         }
     }
+
+    @Nested
+    @DisplayName("Version conflict")
+    class VersionConflict {
+
+        @Test
+        void handleVersionConflict_returns409_withProblemPayload() {
+            UUID id = UUID.randomUUID();
+            var ex = new com.jorgeandreu.products.application.exception.ProductVersionConflictException(id, 3);
+
+            var response = handler.handleVersionConflict(ex, webRequest);
+
+            assertThat(response.getStatusCode().value()).isEqualTo(409);
+            Problem p = response.getBody();
+            assertThat(p).isNotNull();
+            assertThat(p.getTitle()).isEqualTo("Version conflict");
+            assertThat(p.getStatus()).isEqualTo(409);
+            // The exception message includes id and expected version
+            assertThat(p.getDetail())
+                    .contains(id.toString())
+                    .contains("3");
+            assertThat(p.getType()).isEqualTo(URI.create("https://example.com/problems/version-conflict"));
+            assertThat(p.getInstance()).isEqualTo(URI.create("/api/v1/products"));
+        }
+    }
+
 }
