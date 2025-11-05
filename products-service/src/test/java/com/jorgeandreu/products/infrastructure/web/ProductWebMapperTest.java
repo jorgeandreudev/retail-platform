@@ -52,7 +52,8 @@ class ProductWebMapperTest {
             var updated = Instant.parse("2025-01-02T11:16:31Z");
             var domain = new Product(
                     id, "ACME-1", "Laptop", BigDecimal.valueOf(999.99),
-                    7, "laptops", created, updated, null, 0L
+                    7, "laptops", "text", "description",
+                    created, updated, null, 0L
             );
 
             var api = mapper.toApi(domain);
@@ -77,7 +78,8 @@ class ProductWebMapperTest {
             var created = Instant.parse("2025-03-01T00:00:00Z");
             var domain = new Product(
                     id, "ACME-2", "Ultra", BigDecimal.valueOf(1234.56),
-                    3, "laptops", created, created, null, 0L
+                    3, "laptops", "text", "description",
+                    created, created, null, 0L
             );
 
             var dto = mapper.toDto(domain);
@@ -216,7 +218,7 @@ class ProductWebMapperTest {
             var created = Instant.parse("2025-01-01T00:00:00Z");
             var p = new Product(
                     UUID.randomUUID(), "ACME-1", "Lap",
-                    BigDecimal.valueOf(999.99), 5, "laptops",
+                    BigDecimal.valueOf(999.99), 5, "laptops","text", "description",
                     created, created, null, 0L
             );
             var page = new PageResult<>(List.of(p), 2, 10, 23, 3);
@@ -249,6 +251,7 @@ class ProductWebMapperTest {
             var p = new Product(
                     UUID.randomUUID(), "ACME-2", "Ultra",
                     BigDecimal.TEN, 1, "laptops",
+                    "text", "description",
                     created, created, null, 0L
             );
             var page = new PageResult<>(Arrays.asList(p, null), 0, 2, 2, 1);

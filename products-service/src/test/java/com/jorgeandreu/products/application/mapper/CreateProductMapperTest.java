@@ -32,7 +32,8 @@ class CreateProductMapperTest {
     @DisplayName("maps fields, sets version from initialVersion, generates id/createdAt/updatedAt and deletedAt=null")
     void mapsFieldsAndGeneratesMeta() {
         CreateProductCommand cmd = new CreateProductCommand(
-                "ACME-123", "Laptop Pro", BigDecimal.valueOf(1299.99), 5, "laptops"
+                "ACME-123", "Laptop Pro", BigDecimal.valueOf(1299.99), 5, "laptops",
+                "High-end laptop", "A powerful laptop for professionals."
         );
         long initialVersion = 5L;
         Instant t0 = Instant.now();
@@ -58,7 +59,7 @@ class CreateProductMapperTest {
     @DisplayName("generates a new id on each call (ids must differ)")
     void generatesDifferentIdsEachCall() {
         CreateProductCommand cmd = new CreateProductCommand(
-                "ACME-001", "X", BigDecimal.ONE, 1, "cat"
+                "ACME-001", "X", BigDecimal.ONE, 1, "cat", null, null
         );
         Product p1 = mapper.toDomain(cmd, 1L);
         Product p2 = mapper.toDomain(cmd, 1L);
@@ -72,7 +73,7 @@ class CreateProductMapperTest {
     @DisplayName("handles nullable fields from command (e.g., category=null)")
     void handlesNullablesFromCommand() {
         CreateProductCommand cmd = new CreateProductCommand(
-                "ACME-002", "Basic", BigDecimal.ZERO, 0, null
+                "ACME-002", "Basic", BigDecimal.ZERO, 0, null, null, null
         );
 
         Product p = mapper.toDomain(cmd, 0L);

@@ -10,7 +10,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>com.jorgeandreu</groupId>
 	<artifactId>orders-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>orders-service</name>
@@ -30,7 +29,22 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<mapstruct.version>1.5.5.Final</mapstruct.version>
+		<lombok.version>1.18.30</lombok.version>
+		<sonar.organization>jorgeandreudev</sonar.organization>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>2025.0.0</version>
+				<type>pom</type><scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 
 		<dependency>
@@ -77,6 +91,17 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.openapitools</groupId>
+			<artifactId>jackson-databind-nullable</artifactId>
+			<version>0.2.7</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
@@ -87,21 +112,213 @@
 			<artifactId>mongodb</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+        </dependency>
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>${mapstruct.version}</version>
+		</dependency>
 
-	</dependencies>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-spring-boot3</artifactId>
+		</dependency>
+
+    </dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.jorgeandreu.orders.OrdersServiceApplication</mainClass>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>7.7.0</version>
+				<executions>
+					<execution>
+						<id>generate-orders-api</id>
+						<phase>generate-sources</phase>
+						<goals><goal>generate</goal></goals>
+						<configuration>
+							<inputSpec>${project.parent.basedir}/contracts/orders/orders-v1.yaml</inputSpec>
+							<generatorName>spring</generatorName>
+							<apiPackage>com.jorgeandreu.orders.infrastructure.api</apiPackage>
+							<modelPackage>com.jorgeandreu.orders.infrastructure.api.model</modelPackage>
+							<output>${project.build.directory}/generated-sources/openapi</output>
+
+							<generateApis>true</generateApis>
+							<generateModels>true</generateModels>
+							<generateSupportingFiles>false</generateSupportingFiles>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+
+							<configOptions>
+								<delegatePattern>true</delegatePattern>
+								<useSpringBoot3>true</useSpringBoot3>
+								<useJakartaEe>true</useJakartaEe>
+								<dateLibrary>java8</dateLibrary>
+								<useTags>true</useTags>
+								<generateConstructorWithAllArgs>true</generateConstructorWithAllArgs>
+							</configOptions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<id>add-generated-sources</id>
+						<phase>generate-sources</phase>
+						<goals><goal>add-source</goal></goals>
+						<configuration>
+							<sources>
+								<source>${project.build.directory}/generated-sources/openapi/src/main/java</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<executions>
+					<execution>
+						<id>copy-openapi</id>
+						<phase>process-resources</phase>
+						<goals><goal>resources</goal></goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>${project.basedir}/../contracts/orders</directory>
+									<includes>
+										<include>orders-v1.yaml</include>
+									</includes>
+									<targetPath>static/openapi</targetPath>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>21</source>
+					<target>21</target>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>0.2.0</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+
 				<configuration>
-					<skip>true</skip>
+					<excludes>
+						<exclude>**/infrastructure/api/**</exclude>
+						<exclude>**/*Api.class</exclude>
+						<exclude>**/*ApiController*.class</exclude>
+						<exclude>**/*ApiUtil.class</exclude>
+
+						<exclude>**/StubProductCatalogAdapter.*</exclude>
+						<exclude>**/ProductDetailsDto.*</exclude>
+						<exclude>**/OrderCanceledEvent.*</exclude>
+						<exclude>**/ItemDocument.*</exclude>
+						<exclude>**/OrderDocument.*</exclude>
+						<exclude>**/ApiUtil.*</exclude>
+						<exclude>**/CreateOrderCommand.*</exclude>
+						<exclude>**/SearchCriteria.*</exclude>
+						<exclude>**/ProductSnapshot.*</exclude>
+						<exclude>**/Order.*</exclude>
+
+						<exclude>**/*Application.class</exclude>
+						<exclude>**/infrastructure/web/util/**</exclude>
+					</excludes>
 				</configuration>
+
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>jacoco-check</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.75</minimum>
+										</limit>
+									</limits>
+									<excludes>
+										<exclude>**/infrastructure/api/**</exclude>
+										<exclude>**/*Api.class</exclude>
+										<exclude>**/*ApiController*.class</exclude>
+										<exclude>**/*ApiUtil.class</exclude>
+										<exclude>**/*Application.class</exclude>
+										<exclude>**/infrastructure/web/util/**</exclude>
+									</excludes>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

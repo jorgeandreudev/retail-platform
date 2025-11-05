@@ -90,6 +90,8 @@ class ProductEntityMapperTest {
                     BigDecimal.valueOf(1299.99),
                     3,
                     "computers",
+                    "text",
+                    "description",
                     Instant.now(),
                     Instant.now(),
                     null,

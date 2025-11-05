@@ -66,7 +66,7 @@ class ProductsApiDelegateImplTest {
 
         sampleDomain = new Product(
                 UUID.randomUUID(), "ACME-1", "Laptop", BigDecimal.valueOf(999.99),
-                5, "laptops", Instant.now(), Instant.now(), null, 0L
+                5, "laptops","text", "description", Instant.now(), Instant.now(), null, 0L
         );
 
         sampleDomain = new Product(
@@ -76,6 +76,8 @@ class ProductsApiDelegateImplTest {
                 BigDecimal.valueOf(999.99),
                 5,
                 "laptops",
+                "text",
+                "description",
                 Instant.now(),
                 Instant.now(),
                 null,
@@ -209,6 +211,7 @@ class ProductsApiDelegateImplTest {
 
         Product updated = new Product(
                 id, "ACME-9", "New Name", BigDecimal.valueOf(777.77), 9, "laptops",
+                "text", "description",
                 Instant.now(), Instant.now(), null, 3L
         );
 
@@ -237,7 +240,8 @@ class ProductsApiDelegateImplTest {
 
         var p = new Product(
                 UUID.randomUUID(), "ACME-7", "Desk", BigDecimal.TEN, 1,
-                "furniture", Instant.now(), Instant.now(), null, 0L
+                "furniture","text", "description",
+                Instant.now(), Instant.now(), null, 0L
         );
         var pageResult = new PageResult<>(List.of(p), 1, 5, 1, 1);
         when(listProductUC.list(any(SearchCriteriaCommand.class))).thenReturn(pageResult);
@@ -273,7 +277,8 @@ class ProductsApiDelegateImplTest {
 
         var p = new Product(
                 UUID.randomUUID(), "ACME-8", "Chair", BigDecimal.ONE, 2,
-                "furniture", Instant.now(), Instant.now(), null, 0L
+                "furniture", "text", "description",
+                Instant.now(), Instant.now(), null, 0L
         );
         var pageResult = new PageResult<>(List.of(p), 0, 20, 1, 1);
         when(listProductUC.list(any(SearchCriteriaCommand.class))).thenReturn(pageResult);

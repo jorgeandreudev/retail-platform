@@ -8,6 +8,8 @@ services:
       POSTGRES_DB: productsdb
       POSTGRES_USER: products
       POSTGRES_PASSWORD: products
+    volumes:
+      - pg_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U products -d productsdb"]
       interval: 5s
@@ -19,11 +21,91 @@ services:
     container_name: retail-mongo
     ports:
       - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval 'db.runCommand({ ping: 1 })' || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
 
   kafka:
     image: docker.redpanda.com/redpandadata/redpanda:v24.1.3
     container_name: retail-kafka
-    command: >
-      redpanda start --overprovisioned --smp 1 --memory 1G --mode dev
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - 1G
+      # dos listeners: interno y externo para clientes en host
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - PLAINTEXT://retail-kafka:9092,PLAINTEXT_HOST://localhost:19092
     ports:
-      - "9092:9092"
+      - "19092:19092"                   # host -> external listener
+      - "9092:9092"                     # opcional: interno (útil si la app va en compose)
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster info || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Opcional: admin visual de Postgres
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: retail-pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com 
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  eureka:
+    build:
+      context: ../eureka-server
+      dockerfile: Dockerfile
+    container_name: retail-eureka
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+
+  # OPCIONAL: si quieres también la app dentro del compose
+  # products-service:
+  #   build:
+  #     context: ..
+  #     dockerfile: products-service/Dockerfile
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/productsdb
+  #     SPRING_DATASOURCE_USERNAME: products
+  #     SPRING_DATASOURCE_PASSWORD: products
+  #     SPRING_PROFILES_ACTIVE: docker
+  #     KAFKA_BOOTSTRAP_SERVERS: retail-kafka:9092
+  #   ports:
+  #     - "8081:8081"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     kafka:
+  #       condition: service_healthy
+
+volumes:
+  pg_data:
+  mongo_data:
+  redpanda_data:
