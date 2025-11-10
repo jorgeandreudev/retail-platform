@@ -18,17 +18,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Bean
-    @Order(1)
-    SecurityFilterChain docs(HttpSecurity http) throws Exception {
-        http.securityMatcher("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**");
-        http.csrf(csrf -> csrf.disable()); // ✅ CSRF deshabilitado solo para endpoints públicos
-        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        return http.build();
-    }
 
     @Bean
-    @Order(2)
+    @Order(1)
     SecurityFilterChain api(HttpSecurity http) throws Exception {
         http.securityMatcher("/products/**");
         http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
