@@ -23,7 +23,7 @@ public interface ApiConverters {
     }
 
     default <T> T map(Optional<T> v) {
-        return v != null ? v.orElse(null) : null;
+        return v.orElse(null);
     }
     default OrderStatus map(Order.StatusEnum v) { return v == null ? null : OrderStatus.valueOf(v.getValue()); }
     default Order.StatusEnum map(OrderStatus v) { return v == null ? null : Order.StatusEnum.fromValue(v.name()); }
