@@ -18,6 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    // These routes are for public information only and do not require CSRF protection
     @Bean
     @Order(1)
     SecurityFilterChain docs(HttpSecurity http) throws Exception {
