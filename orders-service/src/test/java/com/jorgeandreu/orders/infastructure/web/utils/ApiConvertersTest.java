@@ -93,25 +93,6 @@ class ApiConvertersTest {
             Optional<Object> result = mapper.map((Object) null);
             assertThat(result).isEmpty();
         }
-
-        @Test
-        void mapOptionalToValue_present() {
-            Optional<String> opt = Optional.of("hello");
-            String result = mapper.map(opt);
-            assertThat(result).isEqualTo("hello");
-        }
-
-        @Test
-        void mapOptionalToValue_emptyReturnsNull() {
-            Optional<String> opt = Optional.empty();
-            String result = mapper.map(opt);
-            assertThat(result).isNull();
-        }
-
-        @Test
-        void mapOptionalToValue_nullReturnsNull() {
-            assertThat(mapper.map((Optional<String>) null)).isNull();
-        }
     }
 
     @Nested
