@@ -6,6 +6,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,7 +22,9 @@ public class SecurityConfig {
     @Order(1)
     SecurityFilterChain docs(HttpSecurity http) throws Exception {
         http.securityMatcher("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**");
-        http.csrf(csrf -> csrf.disable());
+        http.csrf(csrf -> csrf.ignoringRequestMatchers(
+                "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**"
+        ));
         http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         return http.build();
     }
@@ -29,8 +32,9 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     SecurityFilterChain api(HttpSecurity http) throws Exception {
-        http.securityMatcher("/products/**"); // <— clave: no anyRequest aquí
+        http.securityMatcher("/products/**");
         http.csrf(csrf -> csrf.disable());
+        http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeHttpRequests(auth -> auth.anyRequest().hasAnyRole("SYSTEM", "ADMIN"));
         http.httpBasic(Customizer.withDefaults());
         return http.build();
@@ -44,7 +48,8 @@ public class SecurityConfig {
         );
     }
 
-    @Bean PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }
-
-
