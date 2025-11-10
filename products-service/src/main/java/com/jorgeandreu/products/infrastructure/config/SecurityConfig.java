@@ -18,14 +18,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    // These routes are for public information only and do not require CSRF protection
     @Bean
     @Order(1)
     SecurityFilterChain docs(HttpSecurity http) throws Exception {
         http.securityMatcher("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**");
-        http.csrf(csrf -> csrf.ignoringRequestMatchers(
-                "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**"
-        ));
+        http.csrf(csrf -> csrf.disable()); // ✅ CSRF deshabilitado solo para endpoints públicos
         http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         return http.build();
     }
@@ -34,7 +31,6 @@ public class SecurityConfig {
     @Order(2)
     SecurityFilterChain api(HttpSecurity http) throws Exception {
         http.securityMatcher("/products/**");
-        http.csrf(csrf -> csrf.disable());
         http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeHttpRequests(auth -> auth.anyRequest().hasAnyRole("SYSTEM", "ADMIN"));
         http.httpBasic(Customizer.withDefaults());
@@ -51,7 +47,6 @@ public class SecurityConfig {
                 User.withUsername("admin").password(pe.encode(adminPass)).roles("ADMIN").build()
         );
     }
-
 
     @Bean
     PasswordEncoder passwordEncoder() {
