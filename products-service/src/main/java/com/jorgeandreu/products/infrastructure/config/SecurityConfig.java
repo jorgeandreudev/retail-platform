@@ -42,11 +42,15 @@ public class SecurityConfig {
 
     @Bean
     UserDetailsService users(PasswordEncoder pe) {
+        String systemPass = System.getenv().getOrDefault("SYSTEM_USER_PASS", "changeMe123!");
+        String adminPass  = System.getenv().getOrDefault("ADMIN_USER_PASS", "changeMe123!");
+
         return new InMemoryUserDetailsManager(
-                User.withUsername("system").password(pe.encode("system")).roles("SYSTEM").build(),
-                User.withUsername("admin").password(pe.encode("admin")).roles("ADMIN").build()
+                User.withUsername("system").password(pe.encode(systemPass)).roles("SYSTEM").build(),
+                User.withUsername("admin").password(pe.encode(adminPass)).roles("ADMIN").build()
         );
     }
+
 
     @Bean
     PasswordEncoder passwordEncoder() {

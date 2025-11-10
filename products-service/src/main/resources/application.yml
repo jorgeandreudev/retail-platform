@@ -50,3 +50,7 @@ debug: true
 
 products:
   initial-version: 1
+
+env:
+  SYSTEM_USER_PASS: ${SYSTEM_USER_PASS:systemPass!2024}
+  ADMIN_USER_PASS: ${ADMIN_USER_PASS:userPass!2024}
