@@ -18,9 +18,13 @@ public interface ApiConverters {
     default BigDecimal map(Double v) { return v == null ? null : BigDecimal.valueOf(v); }
     default Double map(BigDecimal v) { return v == null ? null : v.doubleValue(); }
 
-    default <T> Optional<T> map(T v) { return Optional.ofNullable(v); }
-    default <T> T map(Optional<T> v) { return v == null ? null : v.orElse(null); }
+    default <T> Optional<T> map(T v) {
+        return Optional.ofNullable(v);
+    }
 
+    default <T> T map(Optional<T> v) {
+        return v != null ? v.orElse(null) : null;
+    }
     default OrderStatus map(Order.StatusEnum v) { return v == null ? null : OrderStatus.valueOf(v.getValue()); }
     default Order.StatusEnum map(OrderStatus v) { return v == null ? null : Order.StatusEnum.fromValue(v.name()); }
 }
