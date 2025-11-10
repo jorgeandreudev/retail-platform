@@ -17,6 +17,8 @@ public interface CreateProductMapper {
     @Mapping(target = "price",      source = "cmd.price")
     @Mapping(target = "stock",      source = "cmd.stock")
     @Mapping(target = "category",   source = "cmd.category")
+    @Mapping(target = "text",   source = "cmd.text")
+    @Mapping(target = "description",   source = "cmd.description")
     @Mapping(target = "createdAt",  expression = "java(Instant.now())")
     @Mapping(target = "updatedAt",  expression = "java(Instant.now())")
     @Mapping(target = "deletedAt",  expression = "java(null)")

@@ -11,6 +11,8 @@ public record Product(
         BigDecimal price,
         Integer stock,
         String category,
+        String text,
+        String description,
         Instant createdAt,
         Instant updatedAt,
         Instant deletedAt,

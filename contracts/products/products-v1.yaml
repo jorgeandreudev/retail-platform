@@ -12,6 +12,8 @@ paths:
     post:
       summary: Create a new product
       operationId: createProduct
+      security:
+        - basicAuth: [ ]
       tags: [Products]
       requestBody:
         required: true
@@ -128,6 +130,8 @@ paths:
     delete:
       tags: [ Products ]
       summary: Delete product by id (soft delete)
+      security:
+        - basicAuth: [ ]
       operationId: deleteProductById
       parameters:
         - in: path
@@ -147,6 +151,8 @@ paths:
     put:
       tags: [ Products ]
       summary: Update a product by id (optimistic locking)
+      security:
+        - basicAuth: [ ]
       operationId: updateProductById
       parameters:
         - in: path
@@ -181,7 +187,7 @@ components:
   schemas:
     CreateProductRequest:
       type: object
-      required: [sku, name, price, stock, category]
+      required: [sku, name, price, stock, category, text, description]
       properties:
         sku:
           type: string
@@ -204,6 +210,14 @@ components:
           type: string
           minLength: 1
           example: "laptops"
+        text:
+          type: string
+          minLength: 1
+          example: "laptop text"
+        description:
+          type: string
+          minLength: 1
+          example: "description of the laptop"
 
     Product:
       type: object
@@ -229,6 +243,12 @@ components:
         category:
           type: string
           example: "laptops"
+        text:
+          type: string
+          example: "laptop text"
+        description:
+          type: string
+          example: "description of the laptop"
         createdAt:
           type: string
           format: date-time
@@ -292,3 +312,8 @@ components:
         stock: { type: integer, minimum: 0, example: 12 }
         category: { type: string, minLength: 1, example: "laptops" }
         version: { type: integer, minimum: 0, example: 3 }
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic

@@ -1,0 +1,54 @@
+@host = http://localhost:8081
+@json = application/json
+
+### List (paginado)
+GET {{host}}/api/v1/products?page=0&size=10&sort=name,asc
+
+### Get by id
+GET {{host}}/api/v1/products/{{productId}}
+
+### Create (requiere auth si tienes Basic)
+POST {{host}}/api/v1/products
+Content-Type: {{json}}
+Authorization: Basic {{base64 admin:admin}}
+
+{
+  "sku": "ACME-123",
+  "name": "Laptop Pro 14",
+  "price": 1299.99,
+  "stock": 10,
+  "category": "laptops",
+  "description": "Ultrabook",
+  "text": "Pantalla 14\", 16GB RAM"
+}
+
+### Update (optimistic locking si usas version)
+PUT {{host}}/api/v1/products/{{productId}}
+Content-Type: {{json}}
+Authorization: Basic {{base64 admin:admin}}
+
+{
+  "name": "Laptop Pro 14 2025",
+  "price": 1399.99,
+  "stock": 12,
+  "category": "laptops",
+  "description": "Ultrabook 2025",
+  "text": "Pantalla 14\", 32GB RAM",
+  "version": {{version}}
+}
+
+### Delete
+DELETE {{host}}/api/v1/products/{{productId}}
+Authorization: Basic {{base64 admin:admin}}
+
+### Search criteria
+POST {{host}}/api/v1/products/_search?page=0&size=5
+Content-Type: {{json}}
+
+{
+  "sku": "ACME",
+  "nameContains": "Laptop",
+  "categories": ["laptops"],
+  "priceMin": 500,
+  "priceMax": 2000
+}

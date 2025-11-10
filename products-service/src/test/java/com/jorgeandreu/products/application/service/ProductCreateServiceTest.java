@@ -42,7 +42,9 @@ class ProductCreateServiceTest {
                 "Laptop Pro 15",
                 BigDecimal.valueOf(1499.99),
                 5,
-                "laptops"
+                "laptops",
+                "High-end laptop",
+                "A powerful laptop for professionals."
         );
     }
 
@@ -65,7 +67,8 @@ class ProductCreateServiceTest {
         @DisplayName("throws IllegalArgumentException when price is negative")
         void negativePrice() {
             CreateProductCommand cmd = new CreateProductCommand(
-                    "ACME-001", "Test", BigDecimal.valueOf(-1), 10, "gadgets"
+                    "ACME-001", "Test", BigDecimal.valueOf(-1), 10, "gadgets",
+                    "Test product", null
             );
 
             assertThatThrownBy(() -> service.create(cmd))
@@ -80,7 +83,8 @@ class ProductCreateServiceTest {
         @DisplayName("throws IllegalArgumentException when stock is negative")
         void negativeStock() {
             CreateProductCommand cmd = new CreateProductCommand(
-                    "ACME-002", "Test", BigDecimal.ONE, -5, "gadgets"
+                    "ACME-002", "Test", BigDecimal.ONE, -5, "gadgets",
+                    "Test product", null
             );
 
             assertThatThrownBy(() -> service.create(cmd))
@@ -140,6 +144,8 @@ class ProductCreateServiceTest {
                 BigDecimal.valueOf(1499.99),
                 5,
                 "laptops",
+                "text",
+                "description",
                 Instant.now(),
                 Instant.now(),
                 null,

@@ -279,6 +279,8 @@ class ProductRepositoryAdapterTest {
                 BigDecimal.ZERO,
                 0,
                 "laptops",
+                "text",
+                "description",
                 Instant.now(),
                 Instant.now(),
                 null,

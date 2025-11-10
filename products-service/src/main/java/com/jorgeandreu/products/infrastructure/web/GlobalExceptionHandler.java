@@ -90,7 +90,7 @@ public class GlobalExceptionHandler {
     }
 
     private URI path(WebRequest req) {
-        var d = req.getDescription(false); // "uri=/api/v1/products"
+        var d = req.getDescription(false);
         return URI.create(d.startsWith("uri=") ? d.substring(4) : d);
     }
 }

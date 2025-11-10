@@ -120,6 +120,8 @@ class ProductQueryServiceTest {
                 BigDecimal.valueOf(1299.99),
                 10,
                 "laptops",
+                "text",
+                "description",
                 Instant.parse("2025-01-01T00:00:00Z"),
                 Instant.parse("2025-01-01T00:00:00Z"),
                 null,

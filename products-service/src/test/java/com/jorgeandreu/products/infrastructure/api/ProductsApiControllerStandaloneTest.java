@@ -70,7 +70,9 @@ class ProductsApiControllerStandaloneTest {
                     .name("Laptop")
                     .price(1299.99)
                     .stock(5)
-                    .category("laptops");
+                    .category("laptops")
+                    .text("text")
+                    .description("description");
 
             var id = UUID.randomUUID();
             var apiProduct = new Product()

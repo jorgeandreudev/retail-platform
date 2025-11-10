@@ -1,0 +1,1 @@
+mvn -q -DskipITs=false clean verify

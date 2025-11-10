@@ -1,0 +1,189 @@
+openapi: 3.0.3
+info:
+  title: Orders API
+  version: 1.0.0
+servers:
+  - url: /api/v1
+
+paths:
+  /orders:
+    post:
+      summary: Create a new order
+      operationId: createOrder
+      security: [{ basicAuth: [] }]
+      tags: [Orders]
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: false
+          schema: { type: string, minLength: 8 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateOrderRequest' }
+      responses:
+        '201':
+          description: Order created
+          headers:
+            Location: { description: URI of created order, schema: { type: string, format: uri } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: Conflict (idempotency or business rule)
+          content:
+            application/json:
+              schema: { $ref: '../common/components.yaml#/components/schemas/Problem' }
+
+    get:
+      summary: List orders (pagination & sorting)
+      operationId: listOrders
+      tags: [Orders]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+        - in: query
+          name: sort
+          schema: { type: string, example: "createdAt,desc" }
+      responses:
+        '200':
+          description: Page of orders
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /orders/search:
+    post:
+      summary: Search orders by criteria
+      operationId: searchOrders
+      tags: [Orders]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderSearchCriteriaRequest' }
+      responses:
+        '200':
+          description: Page of orders
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /orders/{id}:
+    get:
+      summary: Get order by id
+      operationId: getOrderById
+      tags: [Orders]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /orders/{id}/cancel:
+    post:
+      summary: Cancel order
+      operationId: cancelOrder
+      security: [{ basicAuth: [] }]
+      tags: [Orders]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Canceled }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Conflict (not cancellable)
+          content:
+            application/json:
+              schema: { $ref: '../common/components.yaml#/components/schemas/Problem' }
+
+components:
+  schemas:
+    CreateOrderItem:
+      type: object
+      required: [ productId, quantity ]
+      properties:
+        productId: { type: string, format: uuid }
+        quantity: { type: integer, minimum: 1 }
+    CreateOrderRequest:
+      type: object
+      required: [customerEmail, items]
+      properties:
+        customerEmail: { type: string, format: email }
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/CreateOrderItem' }
+
+    OrderItem:
+      type: object
+      required: [productId, sku, name, unitPrice, quantity, lineTotal]
+      properties:
+        productId: { type: string, format: uuid }
+        sku:       { type: string }
+        name:      { type: string }
+        unitPrice: { type: number, format: double, minimum: 0 }
+        quantity:  { type: integer, minimum: 1 }
+        lineTotal: { type: number, format: double, minimum: 0 }
+
+    Order:
+      type: object
+      required: [id, status, customerEmail, items, total, createdAt, updatedAt, version]
+      properties:
+        id:            { type: string, format: uuid }
+        status:        { type: string, enum: [PENDING, CONFIRMED, CANCELED] }
+        customerEmail: { type: string, format: email }
+        items:         { type: array, items: { $ref: '#/components/schemas/OrderItem' } }
+        total:         { type: number, format: double, minimum: 0 }
+        createdAt:     { type: string, format: date-time }
+        updatedAt:     { type: string, format: date-time }
+        version:       { type: integer, minimum: 0 }
+
+    OrderPage:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:       { type: array, items: { $ref: '#/components/schemas/Order' } }
+        page:          { type: integer, minimum: 0 }
+        size:          { type: integer, minimum: 1 }
+        totalElements: { type: integer, minimum: 0 }
+        totalPages:    { type: integer, minimum: 0 }
+
+    OrderSearchCriteriaRequest:
+      type: object
+      properties:
+        page:  { type: integer, minimum: 0, default: 0 }
+        size:  { type: integer, minimum: 1, maximum: 200, default: 20 }
+        sort:  { type: string, example: "createdAt,desc" }
+        filters:
+          type: object
+          additionalProperties: false
+          properties:
+            status:   { type: string, enum: [PENDING, CONFIRMED, CANCELED] }
+            email:    { type: string, format: email }
+            minTotal: { type: number, format: double, minimum: 0 }
+            maxTotal: { type: number, format: double, minimum: 0 }
+            from:     { type: string, format: date-time }
+            to:       { type: string, format: date-time }
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic

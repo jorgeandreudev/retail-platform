@@ -8,5 +8,7 @@ public record CreateProductCommand(
         String name,
         BigDecimal price,
         Integer stock,
-        String category
+        String category,
+        String text,
+        String description
 ) {}
